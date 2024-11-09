@@ -1,4 +1,4 @@
-using BibliotecaAPI.Repositories;
+using LojaApi.Repositories;
 using LojaApi;
 using LojaApi.Repositories;
 
@@ -10,25 +10,17 @@ builder.Services.AddControllers();
 
 //Realiza a leitura da conexão com o banco
 
-builder.Services.AddSingleton<ProdutoRepository>(
-    provider =>
-    new ProdutoRepository(builder.Configuration
-    .GetConnectionString("DefaultConnection")));
+//Conecta no banco
+string connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
 
-builder.Services.AddSingleton<UsuarioRepository>(
-    provider =>
-    new UsuarioRepository(builder.Configuration
-    .GetConnectionString("DefaultConnection")));
+//Registra o Service do Repository
+builder.Services.AddSingleton<ProdutoRepository>(provider => new ProdutoRepository(connectionString));
+builder.Services.AddSingleton<UsuarioRepository>(provider => new UsuarioRepository(connectionString));
+builder.Services.AddSingleton<CarrinhoRepository>(provider => new CarrinhoRepository(connectionString));
 
-builder.Services.AddSingleton<CarrinhoRepository>(
-    provider =>
-    new CarrinhoRepository(builder.Configuration
-    .GetConnectionString("DefaultConnection")));
+builder.Services.AddSingleton<PedidoRepository>(provider => new PedidoRepository(connectionString));
 
-builder.Services.AddSingleton<PedidosRepository>(
-    provider =>
-    new PedidosRepository(builder.Configuration
-    .GetConnectionString("DefaultConnection")));
+
 
 //Swagger Parte 1
 builder.Services.AddEndpointsApiExplorer();

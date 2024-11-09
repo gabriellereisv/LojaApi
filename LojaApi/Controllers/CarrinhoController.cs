@@ -1,12 +1,9 @@
-﻿using LojaApi.Models;
-using LojaApi.Repositories;
+﻿using LojaApi.Repositories;
 using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace LojaApi.Controllers
 {
-    [Route("api/[controller]")]
+    [Route("api/carrinho")]
     [ApiController]
     public class CarrinhoController : ControllerBase
     {
@@ -17,41 +14,30 @@ namespace LojaApi.Controllers
             _carrinhoRepository = carrinhoRepository;
         }
 
-        // POST api/carrinho/adicionar
         [HttpPost("adicionar")]
-        public async Task<IActionResult> AdicionarProduto([FromBody] Carrinho carrinho)
+        public async Task<IActionResult> AdicionarProdutoCarrinho(int usuarioId, int produtoId, int quantidade)
         {
-            var produtoAdicionado = await _carrinhoRepository.AdicionarProduto(carrinho);
+            await _carrinhoRepository.AdicionarProdutoCarrinhoDB(usuarioId, produtoId, quantidade);
 
-            if (!produtoAdicionado)
-            {
-                return Ok(new { mensagem = "Quantidade solicitada não disponível em estoque." });
-            }
-
-            return Ok(new { mensagem = "O produto foi adicionado ao carrinho." });
+            return Ok(new { mensagem = "Produto adicionado ao carrinho!" });
         }
 
-
-        // DELETE api/carrinho/remover
         [HttpDelete("remover")]
-        public async Task<IActionResult> RemoverProduto(int usuarioId, int produtoId)
+        public async Task<IActionResult> RemoverProdutoCarrinho(int usuarioId, int produtoId)
         {
-            var resultado = await _carrinhoRepository.RemoverProduto(usuarioId, produtoId);
-            if (resultado)
-            {
-                return Ok(new { mensagem = "O produto foi removido do carrinho." });
-            }
-            return NotFound(new { mensagem = "O produto não foi encontrado no carrinho." });
+            await _carrinhoRepository.RemoverProdutoCarrinhoDB(usuarioId, produtoId);
+
+            return Ok(new { mensagem = "Produto removido do carrinho!" });
         }
 
-        // GET api/carrinho/consultar
-
-        [HttpGet("consultar")]
+        [HttpGet("listar")]
         public async Task<IActionResult> ConsultarCarrinho(int usuarioId)
         {
-            var (itens, total) = await _carrinhoRepository.ConsultarCarrinho(usuarioId);
-            return Ok(new { Itens = itens, Total = total, Mensagem = "Carrinho consultado." });
-        }
+            var itens = await _carrinhoRepository.ConsultarCarrinhoDB(usuarioId);
 
+            var valorTotal = await _carrinhoRepository.CalcularValorTotalCarrinho(usuarioId);
+
+            return Ok(new { itens, valorTotal });
+        }
     }
 }

@@ -1,4 +1,4 @@
-﻿namespace BibliotecaAPI.Models
+﻿namespace LojaApi.Models
 {
     public class Usuario
     {

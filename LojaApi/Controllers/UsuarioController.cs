@@ -1,13 +1,14 @@
-﻿using BibliotecaAPI.Models;
-using BibliotecaAPI.Repositories;
+﻿using LojaApi.Models;
+using LojaApi.Repositories;
 using LojaApi;
 using LojaApi.Models;
 using LojaApi.Repositories;
 using Microsoft.AspNetCore.Mvc;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using LojaApi.Models;
 
-namespace BibliotecaAPI.Controllers
+namespace LojaApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -24,15 +25,15 @@ namespace BibliotecaAPI.Controllers
         [HttpPost("cadastrar-usuario")]
         public async Task<IActionResult> CadastrarUsuarioDB([FromBody] Usuario usuario)
         {
-            await _usuarioRepository.CadastrarUsuarioDB(usuario);
-            return Ok(new { mensagem = "Usuário registrado com sucesso." });
+            var usuarioId = await _usuarioRepository.CadastrarUsuarioDB(usuario);
+            return Ok(new { mensagem = "Usuário registrado com sucesso.", usuarioId });
         }
 
-        // GET api/<UsuarioController>/buscar-usuario
-        [HttpGet("buscar-usuario")]
-        public async Task<IActionResult> BuscarUsuarios(string? nome = null, string? email = null, string? endereco = null)
+        // GET api/<UsuarioController>/listar-usuario
+        [HttpGet("listar-usuario")]
+        public async Task<IActionResult> ListarUsuarioDB()
         {
-            var usuarios = await _usuarioRepository.BuscarUsuarios(nome, email, endereco);
+            var usuarios = await _usuarioRepository.ListarUsuarioDB();
             return Ok(usuarios);
         }
     }

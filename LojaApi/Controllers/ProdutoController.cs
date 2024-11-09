@@ -25,8 +25,8 @@ namespace LojaApi.Controllers
         [HttpPost("registrar-produto")]
         public async Task<IActionResult> CadastrarProduto([FromBody] Produto produto)
         {
-            await _produtoRepository.CadastrarProduto(produto);
-            return Ok(new { mensagem = "O produto foi cadastrado com sucesso." });
+            var produtoId = await _produtoRepository.CadastrarProduto(produto);
+            return Ok(new { mensagem = "O produto foi cadastrado com sucesso.", produtoId });
         }
 
         [HttpPut("atualizar-produto/{id}")]
@@ -40,14 +40,14 @@ namespace LojaApi.Controllers
         [HttpDelete("deletar-produto/{id}")]
         public async Task<IActionResult> DeletarPorId(int id)
         {
-            var resultado = await _produtoRepository.DeletarPorId(id);
-            if (resultado > 0)
+            try
             {
+                await _produtoRepository.DeletarPorId(id);
                 return Ok(new { mensagem = "O produto foi deletado com sucesso." });
             }
-            else
+            catch(InvalidOperationException ex)
             {
-                return Ok(new { mensagem = "O produto não foi encontrado." });
+                return BadRequest(new { mensagem = ex.Message});
             }
         }
     }

@@ -27,25 +27,25 @@ namespace LojaApi.Repositories
 
         public async Task<int> CadastrarProduto(Produto produto)
         {
-            var sql = "INSERT INTO Produtos (Nome, Descricao, Preco, QuantidadeEstoque) " +
-                      "VALUES (@Nome, @Descricao, @Preco, @QuantidadeEstoque)";
-
             using (var conn = Connection)
             {
+                var sql = "INSERT INTO Produtos (Nome, Descricao, Preco, QuantidadeEstoque) " +
+                      "VALUES (@Nome, @Descricao, @Preco, @QuantidadeEstoque) SELECT LAST_INSERT_ID()";
+
                 return await conn.ExecuteAsync(sql, produto);
             }
         }
 
         public async Task<int> AtualizarProduto(Produto produto)
         {
-            var sql = "UPDATE Produtos SET Nome = @Nome, " +
+            using (var conn = Connection)
+            {
+                var sql = "UPDATE Produtos SET Nome = @Nome, " +
                       "Descricao = @Descricao, " +
                       "Preco = @Preco, " +
                       "QuantidadeEstoque = @QuantidadeEstoque " +
                       "WHERE Id = @Id";
 
-            using (var conn = Connection)
-            {
                 return await conn.ExecuteAsync(sql, produto);
             }
         }
@@ -54,38 +54,19 @@ namespace LojaApi.Repositories
         {
             using (var conn = Connection)
             {
-                    var carrinhoSql = @"
-                SELECT COUNT(*) 
-                FROM Carrinho c
-                JOIN Pedidos p ON c.UsuarioId = p.UsuarioId
-                WHERE c.ProdutoId = @Id
-                AND p.StatusPedido = 'Em andamento';";
+                var carrinhoverSql = "SELECT COUNT(*) FROM Carrinho WHERE ProdutoId = @Id";
 
-                var produtoEmCarrinho = await conn.ExecuteScalarAsync<int>(carrinhoSql, new { Id = id });
+                var carrinhocount = await conn.ExecuteScalarAsync<int>(carrinhoverSql, new { Id = id });
 
-                if (produtoEmCarrinho > 0)
+                if (carrinhocount > 0)
                 {
-                    return -1; 
+                    throw new InvalidOperationException("O produto está em um carrinho ativo.");
                 }
 
-                    var pedidoSql = @"
-                SELECT COUNT(*) 
-                FROM PedidoProdutos pp
-                JOIN Pedidos p ON pp.PedidoId = p.Id
-                WHERE pp.ProdutoId = @Id
-                AND p.StatusPedido = 'Em andamento';";
 
-                var produtoEmPedido = await conn.ExecuteScalarAsync<int>(pedidoSql, new { Id = id });
-                                     
-                if (produtoEmPedido > 0)
-                {
-                    
-                    return -1; 
-                }
+                var sqlexcluir = "DELETE FROM Produtos WHERE Id = @Id";
 
-                var sql = "DELETE FROM Produtos WHERE Id = @Id";
-
-                return await conn.ExecuteAsync(sql, new { Id = id });
+                return await conn.ExecuteAsync(sqlexcluir, new { Id = id });
             }
         }
 
